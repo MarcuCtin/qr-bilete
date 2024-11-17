@@ -7,12 +7,8 @@ import {
 	Typography,
 } from '@mui/material'
 import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner'
-<<<<<<< HEAD
 import axios, { AxiosError } from 'axios'
 import { set } from 'mongoose'
-=======
-import axios from 'axios'
->>>>>>> 6536a7c (generate ui and checking qr fixes fix)
 import React, { useState } from 'react'
 
 const ValidatePage = () => {
