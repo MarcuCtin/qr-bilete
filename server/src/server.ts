@@ -35,12 +35,10 @@ app.post('/api/scan', async (req: any, res: any) => {
 			return res.status(404).json({ error: 'Codul nu există.' })
 		}
 		if (rows[rowIndex][1] === 'A' && rows[rowIndex][2] === 'V') {
-			return res
-				.status(200)
-				.json({
-					message: 'Codul este valid și a fost deja verificat.',
-					isValid: true,
-				})
+			return res.status(200).json({
+				message: 'Codul este valid și a fost deja verificat.',
+				isValid: true,
+			})
 		}
 		if (rows[rowIndex][1] === 'A') {
 			return res
