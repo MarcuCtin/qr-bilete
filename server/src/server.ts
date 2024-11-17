@@ -18,6 +18,7 @@ const extractSpreadsheetId = (spreadsheetUrl: string): string => {
 // Endpoint pentru scanare QR
 app.post('/api/scan', async (req: any, res: any) => {
 	const { code } = req.body
+	console.log(code, 'code')
 	try {
 		const sheets = await getGoogleSheetsClient()
 		const range = `Sheet1!A:E`
@@ -33,8 +34,15 @@ app.post('/api/scan', async (req: any, res: any) => {
 		if (rowIndex === -1) {
 			return res.status(404).json({ error: 'Codul nu există.' })
 		}
-
 		if (rows[rowIndex][1] === 'A' && rows[rowIndex][2] === 'V') {
+			return res
+				.status(200)
+				.json({
+					message: 'Codul este valid și a fost deja verificat.',
+					isValid: true,
+				})
+		}
+		if (rows[rowIndex][1] === 'A') {
 			return res
 				.status(200)
 				.json({ message: 'Biletul este valid.', isValid: true })
@@ -45,7 +53,7 @@ app.post('/api/scan', async (req: any, res: any) => {
 		}
 	} catch (error) {
 		console.error('Eroare la verificare:', error)
-		return res.status(500).json({ error: 'Eroare internă.' })
+		return res.status(500).json({ error })
 	}
 })
 

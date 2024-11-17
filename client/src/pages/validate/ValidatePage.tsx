@@ -7,7 +7,8 @@ import {
 	Typography,
 } from '@mui/material'
 import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
+import { set } from 'mongoose'
 import React, { useState } from 'react'
 
 const ValidatePage = () => {
@@ -26,25 +27,35 @@ const ValidatePage = () => {
 	const [isCurrentQrCodeValid, setIsCurrentQrCodeValid] =
 		useState<boolean>(false)
 	const [message, setMessage] = useState<string>('')
+	const [isLoadingValidity, setIsLoadingValidity] = useState<boolean>(false)
 	const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false)
+	const [response, setResponse] = useState<any>(null)
 	const handleScan = async (data: IDetectedBarcode[] | null) => {
-		console.log('scafdwadw')
 		const qrCode = data?.[0]?.rawValue
-		console.log(data)
+
+		setMessage(`Se validează codul... ${qrCode}`)
+
 		if (data) {
 			try {
-				const response = await axios.post(
-					'http://localhost:4400/api/scan',
-					{ code: qrCode }
-				)
-				console.log(response.data)
-				setScannedCode(data)
-				setPausedScanner(true)
-				setMessage(response.data.message)
+				setIsLoadingValidity(true)
+				const response = await axios
+					.post('http://localhost:4400/api/scan', { code: qrCode })
+					.then((response) => {
+						setMessage(response.data.message)
+						setIsLoadingValidity(false)
+						setIsCurrentQrCodeValid(response.data.isValid)
+						setMessage(response.data.message)
+						setScannedCode(data)
+						setPausedScanner(true)
+						setMessage(response.data.message)
+						setIsCurrentQrCodeValid(response.data.isValid)
+					})
+					.catch((error: AxiosError) => {
+						console.log(error.message, 'error hereee')
+					})
 			} catch (error: any) {
-				setMessage(
-					error.response?.data?.message || 'Eroare la scanare.'
-				)
+				console.log(error.response?.data?.message, 'error here')
+				setMessage(error.data.message)
 			} finally {
 				setPausedScanner(false)
 			}
@@ -105,7 +116,9 @@ const ValidatePage = () => {
 				<Button
 					variant='contained'
 					color='primary'
-					onClick={() => setIsCameraOpen(!isCameraOpen)}
+					onClick={() => {
+						setIsCameraOpen(!isCameraOpen)
+					}}
 				>
 					{isCameraOpen ? 'Închide' : 'Deschide'} scanner
 				</Button>
@@ -168,7 +181,22 @@ const ValidatePage = () => {
 					</Button>
 				</FormControl>
 			</Box>
-			{scannedCode && (
+			{isLoadingValidity && (
+				<Stack
+					sx={{
+						width: '200px',
+						height: '50px',
+						textAlign: 'center',
+						justifyContent: 'center',
+						alignItems: 'center',
+						backgroundColor: 'purple',
+					}}
+				>
+					{message}
+				</Stack>
+			)}
+
+			{scannedCode && !isLoadingValidity && (
 				<Stack
 					sx={{
 						width: '200px',
@@ -186,7 +214,7 @@ const ValidatePage = () => {
 							top: '30px',
 						}}
 					>
-						{scannedCode[0].rawValue}
+						{message}
 					</Typography>
 				</Stack>
 			)}
